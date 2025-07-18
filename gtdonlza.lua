@@ -15,45 +15,63 @@ local Window = Rayfield:CreateWindow({
 local AutoToolsTab = Window:CreateTab("⚙️ Auto Tools", 4483362458)
 local MiscTab = Window:CreateTab("🌿 Misc", 4483362458)
 
--- 🌟 Auto Pick Easy Mode
+-- 🌟 Auto Win Fast And Easy (versi lengkap)
 AutoToolsTab:CreateToggle({
-    Name = "Auto Pick Easy Mode",
+    Name = "Auto Win Fast And Easy",
     CurrentValue = false,
-    Flag = "AutoEasy",
+    Flag = "AutoWin",
     Callback = function(Value)
-        _G.autoEasy = Value
-        while _G.autoEasy and task.wait(1) do
-            local remote = game:GetService("ReplicatedStorage")
-                :WaitForChild("RemoteFunctions")
-                :FindFirstChild("PlaceDifficultyVote")
-            if remote then
-                remote:InvokeServer("dif_easy")
+        _G.AutoWin = Value
+
+        if _G.AutoWin then
+            -- Langkah 1: Meletakkan unit
+            local placeArgs = {
+                "unit_pineapple",
+                {
+                    Valid = true,
+                    Rotation = 180,
+                    CF = CFrame.new(-332.525, 62.845, -117.645, -1, 0, 0, 0, 1, 0, 0, 0, -1),
+                    Position = Vector3.new(-332.525, 62.845, -117.645)
+                }
+            }
+            local placeRemote = game:GetService("ReplicatedStorage"):WaitForChild("RemoteFunctions"):WaitForChild("PlaceUnit")
+            placeRemote:InvokeServer(unpack(placeArgs))
+
+            -- Tunggu unit muncul
+            task.wait(1.5)
+
+            -- Langkah 2: Cari ID dari unit yang baru diletakkan
+            local function getFirstPineappleID()
+                local entities = workspace:WaitForChild("Map"):WaitForChild("Entities")
+                for _, unit in pairs(entities:GetChildren()) do
+                    if unit:IsA("Model") and unit.Name == "unit_pineapple" then
+                        local id = unit:GetAttribute("ID")
+                        if id then
+                            return id
+                        end
+                    end
+                end
+                return nil
+            end
+
+            local unitID = getFirstPineappleID()
+            if not unitID then
+                warn("Gagal mendapatkan ID unit.")
+                return
+            end
+
+            -- Langkah 3: Loop upgrade unit tiap 10 detik
+            while _G.AutoWin and task.wait(10) do
+                local upgradeRemote = game:GetService("ReplicatedStorage"):WaitForChild("RemoteFunctions"):WaitForChild("UpgradeUnit")
+                upgradeRemote:InvokeServer(unitID)
             end
         end
     end,
 })
 
--- ⏩ Auto Skip Wave
-AutoToolsTab:CreateToggle({
-    Name = "Auto Skip Wave",
-    CurrentValue = false,
-    Flag = "AutoSkip",
-    Callback = function(Value)
-        _G.autoSkip = Value
-        while _G.autoSkip and task.wait(1.5) do
-            local remote = game:GetService("ReplicatedStorage")
-                :WaitForChild("RemoteFunctions")
-                :FindFirstChild("SkipWave")
-            if remote then
-                remote:InvokeServer()
-            end
-        end
-    end,
-})
 
 -- 💨 Speed Toggle System
 _G.currentSpeed = 1
-
 local function setSpeed(speed)
     local remote = game:GetService("ReplicatedStorage"):FindFirstChild("RemoteFunctions"):FindFirstChild("ChangeTickSpeed")
     if remote then
@@ -113,4 +131,4 @@ AutoToolsTab:CreateToggle({
     end,
 })
 
--- 🌿 Misc Tab Kosong (bisa ditambah fitur lain nanti)
+-- 🌿 Misc Tab Kosong
